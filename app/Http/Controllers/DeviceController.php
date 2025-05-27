@@ -8,11 +8,11 @@ use Illuminate\Http\Request;
 class DeviceController extends Controller
 {
     // Menampilkan daftar device
-    public function index()
-    {
-        $devices = Device::all();
-        return view('devices.index', compact('devices'));
-    }
+public function index()
+{
+    $devices = Device::with(['latestData'])->get(); // gunakan relasi latestData
+    return view('devices.index', compact('devices'));
+}
 
     // Menampilkan form tambah device
     public function create()

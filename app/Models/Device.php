@@ -12,4 +12,11 @@ class Device extends Model
     {
         return $this->hasMany(DeviceData::class, 'device_id', 'device_id');
     }
+
+    public function latestData()
+    {
+        return $this->hasOne(DeviceData::class, 'device_id', 'device_id')->latestOfMany();
+    }
+
+
 }
