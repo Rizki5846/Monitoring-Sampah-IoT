@@ -12,8 +12,9 @@
             </select>
         </div>
 
-        <div class="row g-4">
-            <div class="col-12 col-md-4">
+        <!-- Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
                         <h5 class="card-title"><i class="bi bi-bucket-fill text-success me-2"></i>Berat Sampah</h5>
@@ -24,7 +25,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
                         <h5 class="card-title"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Tinggi Sampah</h5>
@@ -35,18 +36,26 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
                         <h5 class="card-title"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Lokasi</h5>
                         <p id="location">Lat: -<br>Lng: -</p>
-                        <div id="map" class="w-100" style="height: 200px;"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card mt-4 shadow-sm">
+        <!-- Map Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title fw-bold">Peta Lokasi & Rute Tempat Sampah</h5>
+                <div id="map" style="height: 500px;" class="rounded shadow-sm"></div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Data Realtime</h5>
                 <div class="table-responsive">
@@ -68,19 +77,36 @@
         </div>
     </div>
 
-    <!-- Leaflet dan Axios -->
+    <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
     <script>
         let map = L.map('map').setView([-6.9147, 107.6098], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
         let markers = {};
+        let routeControl;
         let selectedDeviceId = '';
 
-        function fetchData() {
+        // Modern dark map styling
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            const userLatLng = [pos.coords.latitude, pos.coords.longitude];
+            const userMarker = L.marker(userLatLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [30, 30] }) })
+                .addTo(map).bindPopup("Lokasi Anda");
+
+            fetchData(userLatLng);
+        }, err => {
+            alert("Gagal mendapatkan lokasi user");
+            fetchData(null);
+        });
+
+        function fetchData(userLatLng = null) {
             axios.get('/api/dashboard-data')
                 .then(res => {
                     const allData = res.data;
@@ -88,7 +114,7 @@
                     tbody.innerHTML = '';
 
                     let latest = null;
-                    let bounds = [];
+                    let routeWaypoints = [];
 
                     allData.forEach(item => {
                         if (selectedDeviceId && item.device_id !== selectedDeviceId) return;
@@ -108,41 +134,41 @@
                             latest = item;
                         }
 
+                        // Add/update marker
                         if (!markers[item.device_id]) {
-                            const marker = L.marker([item.latitude, item.longitude])
+                            markers[item.device_id] = L.marker([item.latitude, item.longitude])
                                 .addTo(map)
                                 .bindPopup(`<b>${item.device_id}</b>`)
-                                .on('click', function () {
+                                .on('click', () => {
                                     selectedDeviceId = item.device_id;
                                     document.getElementById('device-select').value = item.device_id;
-                                    fetchData();
+                                    fetchData(userLatLng);
                                 });
-                            markers[item.device_id] = marker;
                         } else {
                             markers[item.device_id].setLatLng([item.latitude, item.longitude]);
                         }
 
-                        bounds.push([item.latitude, item.longitude]);
+                        routeWaypoints.push(L.latLng(item.latitude, item.longitude));
                     });
 
-                    if (tbody.innerHTML.trim() === '') {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">Tidak ada data sensor</td>
-                            </tr>
-                        `;
-                    }
+                    if (latest) updateDashboard(latest);
+                    else updateDashboardEmpty();
 
-                    if (latest) {
-                        updateDashboard(latest);
-                    } else {
-                        updateDashboardEmpty();
-                    }
+                    // Show routing
+                    if (userLatLng && routeWaypoints.length > 0) {
+                        const allPoints = [L.latLng(userLatLng), ...routeWaypoints];
 
-                    if (!selectedDeviceId && bounds.length) {
-                        map.fitBounds(bounds, { padding: [50, 50] });
-                    } else if (latest) {
-                        map.setView([latest.latitude, latest.longitude], 16);
+                        if (routeControl) {
+                            map.removeControl(routeControl);
+                        }
+
+                        routeControl = L.Routing.control({
+                            waypoints: allPoints,
+                            routeWhileDragging: false,
+                            show: false,
+                            addWaypoints: false,
+                            createMarker: () => null
+                        }).addTo(map);
                     }
                 });
         }
@@ -151,9 +177,8 @@
             document.getElementById('berat').textContent = `${data.berat.toFixed(2)} gram`;
             document.getElementById('tinggi').textContent = `${data.tinggi} cm`;
             document.getElementById('location').innerHTML = `Lat: ${data.latitude}<br>Lng: ${data.longitude}`;
-
-            document.getElementById('berat-progress').style.width = `${Math.min((data.berat / 100) * 100, 100)}%`;
-            document.getElementById('tinggi-progress').style.width = `${Math.min((data.tinggi / 100) * 100, 100)}%`;
+            document.getElementById('berat-progress').style.width = `${Math.min(data.berat, 100)}%`;
+            document.getElementById('tinggi-progress').style.width = `${Math.min(data.tinggi, 100)}%`;
         }
 
         function updateDashboardEmpty() {
@@ -166,10 +191,15 @@
 
         document.getElementById('device-select').addEventListener('change', function (e) {
             selectedDeviceId = e.target.value;
-            fetchData();
+            navigator.geolocation.getCurrentPosition(pos => {
+                fetchData([pos.coords.latitude, pos.coords.longitude]);
+            });
         });
 
-        fetchData();
-        setInterval(fetchData, 3000);
+        setInterval(() => {
+            navigator.geolocation.getCurrentPosition(pos => {
+                fetchData([pos.coords.latitude, pos.coords.longitude]);
+            });
+        }, 5000);
     </script>
 </x-app-layout>

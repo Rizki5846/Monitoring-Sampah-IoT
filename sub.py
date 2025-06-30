@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 import requests
 
-LARAVEL_API = "http://localhost:8000/api/data"  # Sesuaikan
+LARAVEL_API = "http://localhost:8000/api/data"  
 MQTT_BROKER = "fedf34b846cf43389053a83eadaf35c1.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
 
@@ -24,7 +24,7 @@ def on_message(client, userdata, msg):
 
 client = mqtt.Client()
 client.username_pw_set("hivemq.webclient.1746850271989", "t>K#AJ89i1@%0yHjeqVU")
-client.tls_set()  # Enable TLS
+client.tls_set() 
 client.on_connect = on_connect
 client.on_message = on_message
 
