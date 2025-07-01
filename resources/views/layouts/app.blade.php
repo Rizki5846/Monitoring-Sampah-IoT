@@ -78,6 +78,11 @@
                         <i class="bi bi-cpu me-2"></i> Devices
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('jadwal.index') }}" class="nav-link {{ request()->is('jadwal*') ? 'active' : '' }}">
+                        <i class="bi bi-cpu me-2"></i> Jadwal
+                    </a>
+                </li>
             </ul>
             <hr>
             <div>

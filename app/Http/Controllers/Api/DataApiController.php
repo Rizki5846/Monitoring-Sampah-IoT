@@ -10,6 +10,6 @@ class DataApiController extends Controller
 {
     public function index()
     {
-        return DeviceData::latest()->take(100)->get();
+        return DeviceData::latest()->take(20)->get();
     }
 }
