@@ -3,16 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\DeviceData;
 use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
     // Menampilkan daftar device
-public function index()
-{
-    $devices = Device::with(['latestData'])->get(); // gunakan relasi latestData
-    return view('devices.index', compact('devices'));
-}
+    public function index()
+    {
+        $devices = Device::with(['latestData'])->get(); // gunakan relasi latestData
+        return view('devices.index', compact('devices'));
+    }
 
     // Menampilkan form tambah device
     public function create()
@@ -33,4 +34,14 @@ public function index()
 
         return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan.');
     }
+
+    // public function angkut($id)
+    // {
+    //     $data = DeviceData::findOrFail($id);
+    //     $data->sudah_diangkut = true;
+    //     $data->save();
+
+    //     return redirect()->back()->with('success', 'Tempat sampah ditandai sudah diangkut.');
+    // }
+
 }

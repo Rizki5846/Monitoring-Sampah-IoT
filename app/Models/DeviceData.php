@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class DeviceData extends Model
 {
-    protected $fillable = ['device_id', 'berat', 'tinggi', 'latitude', 'longitude', 'notified'];
+    protected $fillable = ['device_id', 'berat', 'tinggi', 'latitude', 'longitude', 'diangkut_at'];
+
 
     public function device()
     {
