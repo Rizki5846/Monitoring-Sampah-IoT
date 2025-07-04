@@ -83,6 +83,11 @@
                         <i class="bi bi-cpu me-2"></i> Jadwal
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('pengangkutan.index') }}" class="nav-link {{ request()->is('pengangkutan*') ? 'active' : '' }}">
+                        <i class="bi bi-cpu me-2"></i> Riwayat Pengangkutan
+                    </a>
+                </li>
             </ul>
             <hr>
             <div>

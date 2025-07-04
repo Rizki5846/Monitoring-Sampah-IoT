@@ -23,6 +23,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
     Route::post('/jadwal', [JadwalController::class, 'store'])->name('jadwal.store');
     Route::delete('/jadwal/{id}', [JadwalController::class, 'destroy'])->name('jadwal.destroy');
+    Route::post('/jadwal/angkut/{device}', [\App\Http\Controllers\JadwalController::class, 'angkut'])->name('jadwal.angkut');
+    Route::get('/pengangkutan/riwayat', function () {
+        $riwayat = \App\Models\RiwayatPengangkutan::with('device')->latest()->get();
+        return view('pengangkutan.index', compact('riwayat'));
+        })->name('pengangkutan.index');
+
+
 
 
 });

@@ -12,7 +12,7 @@
             <div class="input-group">
                 <select name="hari" class="form-select">
                     <option disabled selected>Pilih hari</option>
-                    @foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu','Monday'] as $day)
+                    @foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu','Monday','Friday'] as $day)
                         <option value="{{ $day }}">{{ $day }}</option>
                     @endforeach
                 </select>
@@ -47,7 +47,7 @@
         <!-- Kartu semua hari -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-5">
             @php
-                $semuaHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu','Wednesday','Monday'];
+                $semuaHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu','Wednesday','Monday','Friday'];
             @endphp
 
             @foreach ($semuaHari as $hari)
@@ -96,6 +96,10 @@
                                         <a href="https://www.google.com/maps?q={{ $device->latestData->latitude }},{{ $device->latestData->longitude }}" class="text-primary d-block mb-2" target="_blank">
                                             📍 Lihat Lokasi
                                         </a>
+                                        <form action="{{ route('jadwal.angkut', $device->id) }}" method="POST" onsubmit="return confirm('Sudah diangkut?')">
+                                            @csrf
+                                            <button class="btn btn-success btn-sm mt-2">✅ Sudah Diangkut</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

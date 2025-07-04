@@ -19,5 +19,11 @@ class Device extends Model
         return $this->hasOne(DeviceData::class, 'device_id', 'device_id')->latestOfMany();
     }
 
+    public function riwayatPengangkutan()
+    {
+        return $this->hasMany(RiwayatPengangkutan::class);
+    }
+
+
 
 }

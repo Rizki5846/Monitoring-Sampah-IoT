@@ -19,22 +19,46 @@ class JadwalController extends Controller
 
         $deviceSiapAngkut = collect();
         if ($jadwalAktif) {
+            $sudahDiangkutHariIni = RiwayatPengangkutan::whereDate('waktu_pengangkutan', Carbon::today())
+                ->pluck('device_id');
+
             $deviceSiapAngkut = Device::with('latestData')
                 ->get()
-                ->filter(function ($device) {
+                ->filter(function ($device) use ($sudahDiangkutHariIni) {
                     $data = $device->latestData;
-                    return $data && ($data->berat >= 900 || $data->tinggi >= 90);
-                });
+                    return $data && ($data->berat >= 900 || $data->tinggi >= 90)
+                        && !$sudahDiangkutHariIni->contains($device->id);
+        });
         }
 
         return view('jadwal.index', compact('jadwal', 'hariIni', 'deviceSiapAngkut'));
+    }
+
+    public function angkut(Device $device)
+    {
+        $latest = $device->latestData;
+
+        if (!$latest) {
+            return redirect()->back()->with('error', 'Data sensor tidak ditemukan.');
+        }
+
+        RiwayatPengangkutan::create([
+            'device_id' => $device->id,
+            'berat' => $latest->berat,
+            'tinggi' => $latest->tinggi,
+            'latitude' => $latest->latitude,
+            'longitude' => $latest->longitude,
+            'waktu_pengangkutan' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Tempat sampah berhasil ditandai sudah diangkut.');
     }
 
 
     public function store(Request $request)
     {
         $request->validate([
-            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu,Wednesday,Monday',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu,Wednesday,Monday,Friday',
         ]);
 
         JadwalPengangkutan::firstOrCreate(['hari' => $request->hari]);
@@ -50,26 +74,3 @@ class JadwalController extends Controller
 }
 
 
-
-    // public function tandaiDiangkut(Request $request, $deviceId)
-    // {
-    //     $device = Device::where('device_id', $deviceId)->firstOrFail();
-    //     $latest = $device->latestData;
-
-    //     if ($latest) {
-    //         RiwayatPengangkutan::create([
-    //             'device_id' => $device->device_id,
-    //             'berat' => $latest->berat,
-    //             'tinggi' => $latest->tinggi,
-    //             'latitude' => $latest->latitude,
-    //             'longitude' => $latest->longitude,
-    //             'waktu_angkut' => Carbon::now(),
-    //         ]);
-    //     }
-
-    //     // Update status
-    //     $device->diangkut_at = now();
-    //     $device->save();
-
-    //     return redirect()->back()->with('success', '✅ Data pengangkutan disimpan.');
-    // }
