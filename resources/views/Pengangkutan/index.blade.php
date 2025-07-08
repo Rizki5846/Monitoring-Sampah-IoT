@@ -20,6 +20,7 @@
                     <div class="text-sm">
                         <div>📊 Berat: <span class="font-semibold">{{ $r->berat }} gram</span></div>
                         <div>📏 Tinggi: <span class="font-semibold">{{ $r->tinggi }} cm</span></div>
+                        <div>👷 Petugas: <span class="font-semibold">{{ $r->user->name }} </span></div>
                         <div class="mt-2">
                             📍 <a href="https://maps.google.com?q={{ $r->latitude }},{{ $r->longitude }}" target="_blank" class="text-blue-500 underline">Lihat Lokasi</a>
                         </div>

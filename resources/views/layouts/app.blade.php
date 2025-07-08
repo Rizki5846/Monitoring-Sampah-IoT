@@ -73,11 +73,13 @@
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
+                @auth
                 <li>
                     <a href="{{ route('devices.index') }}" class="nav-link {{ request()->is('devices*') ? 'active' : '' }}">
                         <i class="bi bi-cpu me-2"></i> Devices
                     </a>
-                </li>
+                </li>   
+                @endauth
                 <li>
                     <a href="{{ route('jadwal.index') }}" class="nav-link {{ request()->is('jadwal*') ? 'active' : '' }}">
                         <i class="bi bi-cpu me-2"></i> Jadwal
@@ -91,11 +93,21 @@
             </ul>
             <hr>
             <div>
-                <a href="{{ route('logout') }}" class="nav-link text-danger"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="bi bi-box-arrow-right me-2"></i> Logout
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                @auth
+                    <a href="{{ route('logout') }}" class="nav-link text-danger"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                @endauth
+
+                @guest
+                    <a href="{{ route('login') }}" class="nav-link text-primary">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                    </a>
+                @endguest
             </div>
         </nav>
 
@@ -107,10 +119,12 @@
                     <i class="bi bi-list"></i>
                 </button>
                 <span class="fw-semibold">{{ $title ?? 'Dashboard' }}</span>
+                @auth
                 <div class="d-flex align-items-center gap-2">
                     <span class="text-muted d-none d-sm-block">{{ Auth::user()->name }}</span>
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff" class="rounded-circle" width="32" height="32" />
                 </div>
+                @endauth
             </nav>
 
             <!-- Page Content -->

@@ -6,39 +6,35 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JadwalController;
+use App\Models\RiwayatPengangkutan;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// 🌐 Halaman publik (bisa diakses warga tanpa login)
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
 
+Route::get('/pengangkutan/riwayat', function () {
+    $riwayat = RiwayatPengangkutan::with('device')->latest()->get();
+    return view('pengangkutan.index', compact('riwayat'));
+})->name('pengangkutan.index');
+
+// 🛡️ Halaman admin (harus login)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // CRUD device → hanya admin
     Route::resource('devices', DeviceController::class);
-    Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
+
+    // Tambah dan hapus jadwal → hanya admin
     Route::post('/jadwal', [JadwalController::class, 'store'])->name('jadwal.store');
     Route::delete('/jadwal/{id}', [JadwalController::class, 'destroy'])->name('jadwal.destroy');
-    Route::post('/jadwal/angkut/{device}', [\App\Http\Controllers\JadwalController::class, 'angkut'])->name('jadwal.angkut');
-    Route::get('/pengangkutan/riwayat', function () {
-        $riwayat = \App\Models\RiwayatPengangkutan::with('device')->latest()->get();
-        return view('pengangkutan.index', compact('riwayat'));
-        })->name('pengangkutan.index');
 
-
-
-
+    // Tombol angkut
+    Route::post('/jadwal/angkut/{device}', [JadwalController::class, 'angkut'])->name('jadwal.angkut');
 });
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
-
-
-
-
-
-
+// 🔐 Auth scaffolding
 require __DIR__.'/auth.php';
+
