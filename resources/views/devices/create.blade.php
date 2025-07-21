@@ -4,7 +4,13 @@
 
         <form action="{{ route('devices.store') }}" method="POST">
             @csrf
-
+            <div class="mb-3">
+                <label for="nama_device" class="form-label">Nama Device</label>
+                <input type="text" class="form-control @error('nama_device') is-invalid @enderror" id="nama_device" name="nama_device" required>
+                @error('nama_device')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
             <div class="mb-3">
                 <label for="device_id" class="form-label">Device ID</label>
                 <div class="input-group">

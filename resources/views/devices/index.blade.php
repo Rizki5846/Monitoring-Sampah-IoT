@@ -14,6 +14,7 @@
     <thead>
         <tr>
             <th>Device ID</th>
+            <th>Nama Device</th>
             <th>Waktu Dibuat</th>
             <th>Status</th> {{-- Kolom baru --}}
         </tr>
@@ -37,6 +38,7 @@
             @endphp
             <tr>
                 <td>{{ $device->device_id }}</td>
+                <td>{{ $device->nama_device }}</td>
                 <td>{{ $device->created_at }}</td>
                 <td>
                     <span class="badge bg-{{ $status == 'Penuh' ? 'danger' : ($status == 'Normal' ? 'success' : 'secondary') }}">

@@ -25,23 +25,18 @@ class DeviceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'device_id' => 'required|unique:devices,device_id', // validasi agar device_id unik
+            'device_id' => 'required|unique:devices,device_id',
+            'nama_device' => 'required|string|max:255', // tambahkan validasi nama
         ]);
 
         Device::create([
             'device_id' => $request->device_id,
+            'nama_device' => $request->nama_device, // simpan nama device
         ]);
 
         return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan.');
     }
 
-    // public function angkut($id)
-    // {
-    //     $data = DeviceData::findOrFail($id);
-    //     $data->sudah_diangkut = true;
-    //     $data->save();
 
-    //     return redirect()->back()->with('success', 'Tempat sampah ditandai sudah diangkut.');
-    // }
 
 }

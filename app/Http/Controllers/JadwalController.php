@@ -88,7 +88,7 @@ class JadwalController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'hari' => 'required|in:Monday,Teusday,Wednesday,Thursday,Friday,Saturday'
+            'hari' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday'
         ]);
 
         JadwalPengangkutan::firstOrCreate(['hari' => $request->hari]);

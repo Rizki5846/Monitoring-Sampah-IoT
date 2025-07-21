@@ -31,7 +31,7 @@
                         <h5 class="card-title"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Tinggi Sampah</h5>
                         <h2 class="text-primary" id="tinggi">-</h2>
                         <div class="progress">
-                            <div class="progress-bar bg-primary" id="tinggi-progress" style="width: 0%"></div>
+                            <div class="progress-bar bg-success" id="tinggi-progress" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
@@ -90,15 +90,18 @@
         let routeControl;
         let selectedDeviceId = '';
 
-        // Modern dark map styling
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
         navigator.geolocation.getCurrentPosition(pos => {
             const userLatLng = [pos.coords.latitude, pos.coords.longitude];
-            const userMarker = L.marker(userLatLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [30, 30] }) })
-                .addTo(map).bindPopup("Lokasi Anda");
+            const userMarker = L.marker(userLatLng, {
+                icon: L.icon({
+                    iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                    iconSize: [30, 30]
+                })
+            }).addTo(map).bindPopup("Lokasi Anda");
 
             fetchData(userLatLng);
         }, err => {
@@ -134,7 +137,7 @@
                             latest = item;
                         }
 
-                        // Add/update marker
+                        // Marker
                         if (!markers[item.device_id]) {
                             markers[item.device_id] = L.marker([item.latitude, item.longitude])
                                 .addTo(map)
@@ -154,7 +157,6 @@
                     if (latest) updateDashboard(latest);
                     else updateDashboardEmpty();
 
-                    // Show routing
                     if (userLatLng && routeWaypoints.length > 0) {
                         const allPoints = [L.latLng(userLatLng), ...routeWaypoints];
 
@@ -174,11 +176,29 @@
         }
 
         function updateDashboard(data) {
+            // Berat
             document.getElementById('berat').textContent = `${data.berat.toFixed(2)} gram`;
-            document.getElementById('tinggi').textContent = `${data.tinggi} cm`;
-            document.getElementById('location').innerHTML = `Lat: ${data.latitude}<br>Lng: ${data.longitude}`;
             document.getElementById('berat-progress').style.width = `${Math.min(data.berat, 100)}%`;
-            document.getElementById('tinggi-progress').style.width = `${Math.min(data.tinggi, 100)}%`;
+
+            // Tinggi (as percent)
+            const tinggiMax = 100;
+            let tinggiPersen = Math.min(Math.round((data.tinggi / tinggiMax) * 100), 100);
+            document.getElementById('tinggi').textContent = `${tinggiPersen}%`;
+
+            const tinggiBar = document.getElementById('tinggi-progress');
+            tinggiBar.style.width = `${tinggiPersen}%`;
+            tinggiBar.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+
+            if (tinggiPersen > 80) {
+                tinggiBar.classList.add('bg-danger');
+            } else if (tinggiPersen > 60) {
+                tinggiBar.classList.add('bg-warning');
+            } else {
+                tinggiBar.classList.add('bg-success');
+            }
+
+            // Lokasi
+            document.getElementById('location').innerHTML = `Lat: ${data.latitude}<br>Lng: ${data.longitude}`;
         }
 
         function updateDashboardEmpty() {
@@ -186,7 +206,9 @@
             document.getElementById('tinggi').textContent = '-';
             document.getElementById('location').innerHTML = 'Lat: -<br>Lng: -';
             document.getElementById('berat-progress').style.width = '0%';
-            document.getElementById('tinggi-progress').style.width = '0%';
+            const tinggiBar = document.getElementById('tinggi-progress');
+            tinggiBar.style.width = '0%';
+            tinggiBar.classList.remove('bg-success', 'bg-warning', 'bg-danger');
         }
 
         document.getElementById('device-select').addEventListener('change', function (e) {
