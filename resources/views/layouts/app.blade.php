@@ -4,8 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-
-    <title>{{ config('app.name', 'Monitoring') }}</title>
+    <title>{{ config('app.name', 'SmartBin') }}</title>
 
     <!-- Fonts & Icons -->
     <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
@@ -18,39 +17,48 @@
         body {
             font-family: 'Figtree', sans-serif;
         }
+
         .sidebar {
+            background-color: #212529;
+            color: #adb5bd;
             min-height: 100vh;
-            background-color: #343a40;
-            transition: all 0.3s;
+            transition: left 0.3s ease;
         }
+
         .sidebar .nav-link {
             color: #adb5bd;
+            transition: background-color 0.2s, color 0.2s;
         }
+
         .sidebar .nav-link.active,
         .sidebar .nav-link:hover {
-            color: #fff;
-            background-color: #495057;
+            color: #ffffff;
+            background-color: #343a40;
         }
+
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
-                z-index: 1030;
                 left: -250px;
                 width: 250px;
+                z-index: 1040;
             }
+
             .sidebar.show {
                 left: 0;
             }
+
             .overlay {
                 position: fixed;
                 top: 0;
                 left: 0;
-                height: 100vh;
                 width: 100%;
+                height: 100%;
                 background-color: rgba(0,0,0,0.5);
-                z-index: 1029;
+                z-index: 1039;
                 display: none;
             }
+
             .overlay.show {
                 display: block;
             }
@@ -58,15 +66,16 @@
     </style>
 </head>
 <body>
+    <!-- Overlay -->
     <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
-    
+
     <div class="d-flex">
         <!-- Sidebar -->
-        <nav id="sidebar" class="sidebar d-flex flex-column p-3 text-white">
-            <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none fs-5 fw-bold">
-                <i class="bi bi-recycle me-2"></i> SmartBin
+        <nav id="sidebar" class="sidebar d-flex flex-column p-3">
+            <a href="/" class="d-flex align-items-center mb-4 text-decoration-none text-white fs-5 fw-semibold">
+                <i class="bi bi-recycle me-2 fs-4"></i> SmartBin
             </a>
-            <hr>
+            <hr class="border-secondary">
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
                     <a href="{{ route('dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
@@ -78,42 +87,40 @@
                     <a href="{{ route('devices.index') }}" class="nav-link {{ request()->is('devices*') ? 'active' : '' }}">
                         <i class="bi bi-cpu me-2"></i> Devices
                     </a>
-                </li>   
+                </li>
                 @endauth
                 <li>
                     <a href="{{ route('jadwal.index') }}" class="nav-link {{ request()->is('jadwal*') ? 'active' : '' }}">
-                        <i class="bi bi-cpu me-2"></i> Jadwal
+                        <i class="bi bi-calendar-check me-2"></i> Jadwal
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('pengangkutan.index') }}" class="nav-link {{ request()->is('pengangkutan*') ? 'active' : '' }}">
-                        <i class="bi bi-cpu me-2"></i> Riwayat Pengangkutan
+                        <i class="bi bi-truck me-2"></i> Riwayat Pengangkutan
                     </a>
                 </li>
             </ul>
-            <hr>
+            <hr class="border-secondary mt-auto">
+
+            <!-- Auth Section -->
             <div>
                 @auth
                     <a href="{{ route('logout') }}" class="nav-link text-danger"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="bi bi-box-arrow-right me-2"></i> Logout
                     </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                @endauth
-
-                @guest
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                @else
                     <a href="{{ route('login') }}" class="nav-link text-primary">
                         <i class="bi bi-box-arrow-in-right me-2"></i> Login
                     </a>
-                @endguest
+                @endauth
             </div>
         </nav>
 
-        <!-- Content -->
+        <!-- Main content -->
         <div class="flex-grow-1 w-100">
-            <!-- Top Navbar -->
+            <!-- Topbar -->
             <nav class="navbar navbar-light bg-white shadow-sm px-3 d-flex justify-content-between align-items-center">
                 <button class="btn btn-outline-secondary d-md-none" onclick="toggleSidebar()">
                     <i class="bi bi-list"></i>
@@ -121,22 +128,21 @@
                 <span class="fw-semibold">{{ $title ?? 'Dashboard' }}</span>
                 @auth
                 <div class="d-flex align-items-center gap-2">
-                    <span class="text-muted d-none d-sm-block">{{ Auth::user()->name }}</span>
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff" class="rounded-circle" width="32" height="32" />
+                    <span class="text-muted d-none d-sm-inline">{{ Auth::user()->name }}</span>
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff" class="rounded-circle border" width="32" height="32" />
                 </div>
                 @endauth
             </nav>
 
-            <!-- Page Content -->
+            <!-- Page content -->
             <main class="p-3">
                 {{ $slot }}
             </main>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -147,4 +153,3 @@
     </script>
 </body>
 </html>
-    

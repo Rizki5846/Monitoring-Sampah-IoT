@@ -7,7 +7,7 @@
             <select id="device-select" class="form-select form-select-sm">
                 <option value="">Semua Device</option>
                 @foreach ($devices as $device)
-                    <option value="{{ $device->device_id }}">{{ $device->device_id }}</option>
+                    <option value="{{ $device->device_id }}">{{ $device->nama_device }}</option>
                 @endforeach
             </select>
         </div>
@@ -41,6 +41,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Lokasi</h5>
                         <p id="location">Lat: -<br>Lng: -</p>
+                        <p id="address" class="text-muted small"></p>
                     </div>
                 </div>
             </div>
@@ -223,5 +224,30 @@
                 fetchData([pos.coords.latitude, pos.coords.longitude]);
             });
         }, 5000);
+
+
+        function fetchLocationName(lat, lng) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const displayName = data.display_name || 'Lokasi tidak ditemukan';
+                document.getElementById('address').innerText = displayName;
+            })
+            .catch(error => {
+                console.error('Gagal mengambil nama lokasi:', error);
+                document.getElementById('address').innerText = 'Gagal memuat lokasi';
+            });
+    }
+
+    // Misal koordinat dari GPS device atau browser
+    const latitude = -7.12345;
+    const longitude = 112.54321;
+
+    document.getElementById('location').innerHTML = `Lat: ${latitude}<br>Lng: ${longitude}`;
+
+    // Ambil nama lokasi
+    fetchLocationName(latitude, longitude);
     </script>
 </x-app-layout>
