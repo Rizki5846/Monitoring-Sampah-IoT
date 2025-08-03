@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\DeviceData;
 use App\Models\JadwalPengangkutan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -46,9 +47,8 @@ class DataController extends Controller
 
         $isPenuh = $berat >= 900 || $tinggi >= 90;
 
-        // ✅ Jika penuh dan belum dikirim
+        // Jika penuh dan belum dikirim notifikasi
         if ($isPenuh && !$device->sudah_dikirim_wa) {
-            // Tambahkan pesan tambahan jika hari ini adalah jadwal
             $tambahan = $jadwal ? "\n\n🚛 *Hari ini jadwal pengangkutan. Silakan diangkut!*" : "";
 
             $pesan = "📦 *Tempat Sampah Penuh!*\n\n" .
@@ -58,24 +58,34 @@ class DataController extends Controller
                 "📍 Lokasi: https://www.google.com/maps?q={$data['latitude']},{$data['longitude']}" .
                 $tambahan;
 
-            $response = Http::withHeaders([
-                'Authorization' => '3koPhLPnzgdbBC3NAvmd'
-            ])->asForm()->post('https://api.fonnte.com/send', [
-                'target' => '6285158332699',
-                'message' => $pesan
-            ]);
+            // Ambil semua petugas (user dengan nomor WhatsApp)
+            $petugasList = User::whereNotNull('phone')->get();
+            $terkirim = false;
 
-            if ($response->successful()) {
+            foreach ($petugasList as $petugas) {
+                $response = Http::withHeaders([
+                    'Authorization' => '3koPhLPnzgdbBC3NAvmd'
+                ])->asForm()->post('https://api.fonnte.com/send', [
+                    'target' => $petugas->phone,
+                    'message' => $pesan
+                ]);
+
+                if ($response->successful()) {
+                    $terkirim = true;
+                    Log::info("📤 WA dikirim ke petugas {$petugas->name} ({$petugas->phone}) untuk device {$device->device_id}");
+                } else {
+                    Log::error("❌ Gagal kirim WA ke {$petugas->phone}: " . $response->body());
+                }
+            }
+
+            if ($terkirim) {
                 $device->sudah_dikirim_wa = true;
                 $device->save();
-                Log::info("📤 WA dikirim ke {$device->device_id}");
-            } else {
-                Log::error("❌ Gagal kirim WA: " . $response->body());
             }
-        }
 
-        // ✅ Reset jika tidak penuh
-        if (!$isPenuh && $device->sudah_dikirim_wa) {
+        } 
+        // Reset status jika tidak penuh
+        elseif (!$isPenuh && $device->sudah_dikirim_wa) {
             $device->sudah_dikirim_wa = false;
             $device->save();
             Log::info("🔁 Reset status notifikasi untuk {$device->device_id}");

@@ -24,6 +24,11 @@ class Device extends Model
         return $this->hasMany(RiwayatPengangkutan::class);
     }
 
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'petugas_id');
+    }
+
 
 
 }
