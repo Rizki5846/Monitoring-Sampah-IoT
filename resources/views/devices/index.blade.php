@@ -17,6 +17,7 @@
             <th>Nama Device</th>
             <th>Waktu Dibuat</th>
             <th>Status</th> {{-- Kolom baru --}}
+            <th>Aksi</th>
         </tr>
     </thead>
     <tbody>
@@ -44,6 +45,13 @@
                     <span class="badge bg-{{ $status == 'Penuh' ? 'danger' : ($status == 'Normal' ? 'success' : 'secondary') }}">
                         {{ $status }}
                     </span>
+                </td>
+                <td>
+                <form action="{{ route('devices.destroy', $device->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus device ini?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                </form>
                 </td>
             </tr>
         @endforeach

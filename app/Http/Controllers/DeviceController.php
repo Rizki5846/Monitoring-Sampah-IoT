@@ -26,17 +26,23 @@ class DeviceController extends Controller
     {
         $request->validate([
             'device_id' => 'required|unique:devices,device_id',
-            'nama_device' => 'required|string|max:255', // tambahkan validasi nama
+            'nama_device' => 'required|string|max:255',
         ]);
 
         Device::create([
             'device_id' => $request->device_id,
-            'nama_device' => $request->nama_device, // simpan nama device
+            'nama_device' => $request->nama_device,
         ]);
 
         return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan.');
     }
 
+    // Menghapus device
+    public function destroy($id)
+    {
+        $device = Device::findOrFail($id);
+        $device->delete();
 
-
+        return redirect()->route('devices.index')->with('success', 'Device berhasil dihapus.');
+    }
 }
